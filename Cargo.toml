@@ -1,0 +1,22 @@
+[package]
+name = "http_parser"
+version = "0.1.0"
+authors = ["Tawana Musewe <tawana@aeonis.co.za>"]
+edition = "2018"
+
+[dependencies]
+log = "0.4.11"
+nom = "5.1"
+
+[dev-dependencies]
+bencher = "*"
+
+[profile.bench]
+debug = true
+
+[profile.release]
+debug = true
+
+[[bench]]
+harness = false
+name = "http_parser"
