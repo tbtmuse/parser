@@ -1,65 +1,57 @@
 use nom::Err;
-use ether_server::parser;
+use parser::http;
 use nom::error::ErrorKind;
-use ether_server::http::header;
-use ether_server::parser::http::path;
-use ether_server::parser::http::header;
-use ether_server::parser::http::method;
-use ether_server::parser::http::version;
-use ether_server::http::request::Request;
-use ether_server::parser::http::not_crlf;
-use ether_server::parser::http::whitespace_delimited;
+use parser::http::request::Request;
 
 #[test]
 fn test_method() {
-    assert_eq!(method(b"GET /x HTTP/1.1\r\n"), Ok((&b" /x HTTP/1.1\r\n"[..], &b"GET"[..])));
-    assert_eq!(method(b"\r\nGET /x HTTP/1.1\r\n"), Ok((&b" /x HTTP/1.1\r\n"[..], &b"GET"[..])));
-    assert_eq!(method(b"123454GET /x HTTP/1.1\r\n"), Ok((&b" /x HTTP/1.1\r\n"[..], &b"GET"[..])));
+    assert_eq!(http::parse::method(b"GET /x HTTP/1.1\r\n"), Ok((&b" /x HTTP/1.1\r\n"[..], &b"GET"[..])));
+    assert_eq!(http::parse::method(b"\r\nGET /x HTTP/1.1\r\n"), Ok((&b" /x HTTP/1.1\r\n"[..], &b"GET"[..])));
+    assert_eq!(http::parse::method(b"123454GET /x HTTP/1.1\r\n"), Ok((&b" /x HTTP/1.1\r\n"[..], &b"GET"[..])));
 }
 
 #[test]
 fn test_path() {
     assert_eq!(
-        path(b" /RandomPath/tag.data?cn=tf&c=19&mc=imp&pli=9962555&PluID=0&ord=1400862593645&rtu=-1 HTTP/1.1\r\n"),
+        http::parse::path(b" /RandomPath/tag.data?cn=tf&c=19&mc=imp&pli=9962555&PluID=0&ord=1400862593645&rtu=-1 HTTP/1.1\r\n"),
         Ok((
             &b"HTTP/1.1\r\n"[..],
             &b"/RandomPath/tag.data?cn=tf&c=19&mc=imp&pli=9962555&PluID=0&ord=1400862593645&rtu=-1"[..]
         ))
     );
     assert_eq!(
-        path(b" /wallpapers/hd.png?v=hOlmDALJCWWdjzfBV4ZxJPmrdCLWB%2Ftq7Z%2Ffp4Q%2FxXbVPPREuMJMVGzKraTuhhNWxCCwi6yFEZg%3D&r=783333388 HTTP/1.1\r\n"),
+        http::parse::path(b" /wallpapers/hd.png?v=hOlmDALJCWWdjzfBV4ZxJPmrdCLWB%2Ftq7Z%2Ffp4Q%2FxXbVPPREuMJMVGzKraTuhhNWxCCwi6yFEZg%3D&r=783333388 HTTP/1.1\r\n"),
         Ok((
             &b"HTTP/1.1\r\n"[..],
             &b"/wallpapers/hd.png?v=hOlmDALJCWWdjzfBV4ZxJPmrdCLWB%2Ftq7Z%2Ffp4Q%2FxXbVPPREuMJMVGzKraTuhhNWxCCwi6yFEZg%3D&r=783333388"[..]
         ))
     );
-    assert_eq!(path(b" /x HTTP/1.1\r\n"), Ok((&b"HTTP/1.1\r\n"[..], &b"/x"[..])));
+    assert_eq!(http::parse::path(b" /x HTTP/1.1\r\n"), Ok((&b"HTTP/1.1\r\n"[..], &b"/x"[..])));
 }
 
 #[test]
 fn test_version() {
-    assert_eq!(version(b"HTTP/1.1\r\n"), Ok((&b"\r\n"[..], &b"1.1"[..])));
-    assert_eq!(version(b"HTTP/2\r\n"), Ok((&b"\r\n"[..], &b"2"[..])));
-    assert_eq!(version(b"HTTP/3\r\n"), Ok((&b"\r\n"[..], &b"3"[..])));
+    assert_eq!(http::parse::version(b"HTTP/1.1\r\n"), Ok((&b"\r\n"[..], &b"1.1"[..])));
+    assert_eq!(http::parse::version(b"HTTP/2\r\n"), Ok((&b"\r\n"[..], &b"2"[..])));
+    assert_eq!(http::parse::version(b"HTTP/3\r\n"), Ok((&b"\r\n"[..], &b"3"[..])));
 }
 
 #[test]
 fn test_not_crlf() {
-    assert_eq!(not_crlf(b"abcd efg\r\n"), Ok((&b"\r\n"[..], &b"abcd efg"[..])));
-    assert_eq!(not_crlf(b"frfrfrfrfrfr\r\n"), Ok((&b"\r\n"[..], &b"frfrfrfrfrfr"[..])));
-    assert_eq!(not_crlf(b""), Err(Err::Error((&b""[..], ErrorKind::IsNot))));
+    assert_eq!(http::parse::not_crlf(b"abcd efg\r\n"), Ok((&b"\r\n"[..], &b"abcd efg"[..])));
+    assert_eq!(http::parse::not_crlf(b"frfrfrfrfrfr\r\n"), Ok((&b"\r\n"[..], &b"frfrfrfrfrfr"[..])));
+    assert_eq!(http::parse::not_crlf(b""), Err(Err::Error((&b""[..], ErrorKind::IsNot))));
 }
 
 #[test]
 fn test_space_delimited() {
-    assert_eq!(whitespace_delimited(b" abcd "), Ok((&b""[..], &b"abcd"[..])));
-    assert_eq!(whitespace_delimited(b"nospace"), Err(Err::Error((&b"nospace"[..], ErrorKind::Tag))));
+    assert_eq!(http::parse::whitespace_delimited(b" abcd "), Ok((&b""[..], &b"abcd"[..])));
+    assert_eq!(http::parse::whitespace_delimited(b"nospace"), Err(Err::Error((&b"nospace"[..], ErrorKind::Tag))));
 }
 
 #[test]
 fn test_request_without_body() {
-
-    let data= "\
+    let data = "\
         GET / HTTP/1.1\r\n\
         Host: 127.0.0.1:9000\r\n\
         Connection: Upgrade\r\n\
@@ -75,11 +67,14 @@ fn test_request_without_body() {
         Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits\r\n\
     ";
 
-    let mut headers = [header::EMPTY_HEADER; 32];
+    let mut headers = [http::header::EMPTY_HEADER; 32];
 
     let mut request = Request::new(&mut headers);
 
-    request.parse(data.as_bytes());
+    match request.parse(data.as_bytes()) {
+        Ok(_) => {}
+        Err(e) => panic!("Something went wrong: {:?}", e)
+    }
 
     assert_eq!(request.method(), b"GET");
     assert_eq!(request.path(), b"/");
@@ -90,7 +85,6 @@ fn test_request_without_body() {
 
 #[test]
 fn test_request_with_body() {
-
     let data = "\
         GET / HTTP/1.1\r\n\
         Host: 127.0.0.1:9000\r\n\
@@ -104,12 +98,12 @@ fn test_request_with_body() {
         {\"test\": \"data\"}\
     ";
 
-    let mut headers = [header::EMPTY_HEADER; 32];
+    let mut headers = [http::header::EMPTY_HEADER; 32];
 
     let mut request = Request::new(&mut headers);
 
     match request.parse(data.as_bytes()) {
-        Ok(_) => {},
+        Ok(_) => {}
         Err(e) => panic!("Something went wrong: {:?}", e)
     }
 
@@ -123,7 +117,6 @@ fn test_request_with_body() {
 
 #[test]
 fn test_ignores_body_if_content_length_and_transfer_encoding_header_is_absent() {
-
     let data = "\
         GET / HTTP/1.1\r\n\
         Host: 127.0.0.1:9000\r\n\
@@ -142,7 +135,7 @@ fn test_ignores_body_if_content_length_and_transfer_encoding_header_is_absent() 
         {\"test\":\"data\"}\
     ";
 
-    let mut headers = [header::EMPTY_HEADER; 32];
+    let mut headers = [http::header::EMPTY_HEADER; 32];
 
     let mut request = Request::new(&mut headers);
 
@@ -160,10 +153,9 @@ fn test_ignores_body_if_content_length_and_transfer_encoding_header_is_absent() 
 
 #[test]
 fn test_header() {
+    let mut test_header = http::header::EMPTY_HEADER;
 
-    let mut test_header = header::EMPTY_HEADER;
-
-    let (_, _) = parser::http::header(b"Host: 127.0.0.1:9000\r\n", &mut test_header).unwrap();
+    let (_, _) = http::parse::header(b"Host: 127.0.0.1:9000\r\n", &mut test_header).unwrap();
 
     assert_eq!((test_header.name(), test_header.value()), (&b"Host"[..], &b"127.0.0.1:9000"[..]))
 }

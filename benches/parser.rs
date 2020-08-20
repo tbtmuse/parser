@@ -1,9 +1,9 @@
 use bencher::Bencher;
 use bencher::black_box;
+use parser::http::header;
 use bencher::benchmark_main;
 use bencher::benchmark_group;
-use ether_server::http::header;
-use ether_server::http::request::Request;
+use parser::http::request::Request;
 
 fn test(b: &mut Bencher) {
 
@@ -35,13 +35,9 @@ fn parse(b: &mut Bencher, buffer: &[u8]) {
 
         let buffer = black_box(buffer);
 
-        while ! buffer.is_empty() {
-
-            match req.parse(&buffer) {
-                Ok(_) => {},
-                Err(e) => panic!("Something went wrong: {}", e)
-            }
-
+        match req.parse(&buffer) {
+            Ok(_) => {},
+            Err(e) => panic!("Something went wrong: {}", e)
         }
 
     });

@@ -7,7 +7,7 @@ use crate::http::header::Header;
 
 /// Parses [RFC7230] compliant HTTP Messages<br>
 /// https://tools.ietf.org/html/rfc7230
-/// <br><br>
+///
 /// # Reference
 /// * `OCTET`   - any 8-bit sequence of data<br>
 /// * `CHAR`    - any US-ASCII character (octets 0 - 127)<br>
@@ -42,25 +42,27 @@ static HEADER_NAME_MAP: [bool; 256] = byte_map![
 ];
 
 /// Parse HTTP Request Line
-/// <br><br>
+///
 /// # Arguments
 /// * `input` - A slice that holds the http message
+///
 /// # Expected Format
 /// Method SP request-target/path SP HTTP-Version CRLF
-/// <br><br>
+///
 /// https://tools.ietf.org/html/rfc7230#section-3.1.1
 pub fn request_line(input: &[u8]) -> IResult<&[u8], (&[u8], &[u8], &[u8], &[u8])> {
     nom::sequence::tuple((method, path, version, nom::character::complete::crlf))(input)
 }
 
 /// Parse HTTP Header
-/// <br><br>
+///
 /// # Arguments
 /// * `input` - A slice that holds the http message
 /// * `header` - A mutable instance of the Header struct
+///
 /// # Expected Format
 /// Header-Name: OWS Header Value OWS CRLF
-/// <br><br>
+///
 /// https://tools.ietf.org/html/rfc7231#section-4
 pub fn header<'i, 'h>(input: &'i [u8], header: &'h mut Header<'i>) -> nom::IResult<&'i [u8], ()> {
 
@@ -82,13 +84,14 @@ pub fn header<'i, 'h>(input: &'i [u8], header: &'h mut Header<'i>) -> nom::IResu
 }
 
 /// Parse HTTP Body
-/// <br><br>
+///
 /// # Arguments
 /// * `length` - Size of input to parse
 /// * `input` - A slice that holds the http message
+///
 /// # Expected Format
 /// CRLF *OCTET
-/// <br><br>
+///
 /// https://tools.ietf.org/html/rfc7230#section-3.3
 pub fn body(length: usize, input: &[u8]) -> nom::IResult<&[u8], &[u8]> {
 
@@ -125,13 +128,13 @@ fn is_header_name_token(b: u8) -> bool {
 }
 
 /// Parse HTTP request method
-/// <br><br>
+///
 /// # Arguments
 /// * `input` - A slice that holds the http message
-/// <br><br>
+///
 /// # Expected Format
 /// Any of the following: GET, HEAD, POST, PUT, DELETE, CONNECT, OPTIONS, TRACE, PATCH
-/// <br><br>
+///
 /// https://tools.ietf.org/html/rfc7231#section-4
 pub fn method(input: &[u8]) -> nom::IResult<&[u8], &[u8]> {
 
@@ -147,13 +150,13 @@ pub fn method(input: &[u8]) -> nom::IResult<&[u8], &[u8]> {
 }
 
 /// Parse HTTP request target
-/// <br><br>
+///
 /// # Arguments
 /// * `input` - A slice that holds the http message
-/// <br><br>
+///
 /// # Expected Format
 /// Anything that is US-ASCII SP - space (32) delimited
-/// <br><br>
+///
 /// https://tools.ietf.org/html/rfc7230#section-5.3
 pub fn path(input: &[u8]) -> nom::IResult<&[u8], &[u8]> {
     nom::sequence::delimited(
@@ -164,12 +167,13 @@ pub fn path(input: &[u8]) -> nom::IResult<&[u8], &[u8]> {
 }
 
 /// Parse HTTP request protocol version
-/// <br><br>
+///
 /// # Arguments
 /// * `input` - A slice that holds the http message
+///
 /// # Expected Format
 /// HTTP/[Version]
-/// <br><br>
+///
 /// https://tools.ietf.org/html/rfc7230#section-2.6
 pub fn version(input: &[u8]) -> nom::IResult<&[u8], &[u8]> {
     nom::sequence::preceded(
@@ -225,12 +229,12 @@ impl Error for ParserError {}
 impl fmt::Display for ParserError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            ParserError::RequestLine => write!(f, "ParserError: {}", "Unable to parse HTTP Message request line."),
-            ParserError::Headers => write!(f, "ParserError: {}", "Unable to parse HTTP Message headers."),
-            ParserError::Body => write!(f, "ParserError: {}", "Unable to parse HTTP Message body."),
-            ParserError::ContentLength => write!(f, "ParserError: {}", "Unable to parse HTTP Message Content-Length header."),
+            ParserError::RequestLine => write!(f, "ParserError: Unable to parse HTTP Message request line."),
+            ParserError::Headers => write!(f, "ParserError: Unable to parse HTTP Message headers."),
+            ParserError::Body => write!(f, "ParserError: Unable to parse HTTP Message body."),
+            ParserError::ContentLength => write!(f, "ParserError: Unable to parse HTTP Message Content-Length header."),
             ParserError::InvalidUtf8Content(ref e) => write!(f, "ParserError: {}", e),
-            ParserError::Unknown => write!(f, "ParserError: {}", "An unknown error occurred.")
+            ParserError::Unknown => write!(f, "ParserError: An unknown error occurred.")
         }
     }
 }
